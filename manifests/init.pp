@@ -10,7 +10,16 @@ class aide (
     $email            = $aide::params::email,
     $command          = $aide::params::command,
     $check_parameters = $aide::params::check_parameters,
+    $aide_rules       = {},
+    $aide_watch       = {},
+    $gzip_dbout       = 'yes',
+    $verbose          = '5',
+    $report_url       = ['file:/var/log/aide/aide.log'],
+    
   ) inherits aide::params {
+
+  validate_re($verbose, '^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$'),
+
 
   anchor { 'aide::begin': } ->
   class  { '::aide::install': } ->
@@ -20,13 +29,11 @@ class aide (
   anchor { 'aide::end': }
 
   # Creates resources for aide::rule pulled from hiera
-  $aide_rules = hiera_hash( 'aide::rules_hash', false )
   if $aide_rules {
     create_resources('aide::rule', $aide_rules)
   }
 
   # Creates resources for aide::watch pulled from hiera
-  $aide_watch = hiera_hash( 'aide::watch_hash', false )
   if $aide_watch {
     create_resources('aide::watch', $aide_watch)
   }
